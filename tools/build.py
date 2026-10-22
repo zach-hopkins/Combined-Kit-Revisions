@@ -340,6 +340,13 @@ REQUIRE_COMPONENT ~{TP2}~ ~{optional['BW',2008]}~ ~Install the BW new bard spell
 INCLUDE ~combined-kit-revisions/generated/init-BW.tpa~
 {companion_spells}
 '''
+    main+=f'''\nBEGIN ~[CKR] SR/R compatibility for SCS 1.5x original Inquisitor dispel (install after SCS)~ DESIGNATED 90002
+GROUP ~Late compatibility~
+REQUIRE_COMPONENT ~{TP2}~ ~0~ ~Install the CKR base first.~
+REQUIRE_COMPONENT ~{TP2}~ ~10~ ~Select the original Inquisitor configuration first.~
+REQUIRE_COMPONENT ~stratagems/setup-stratagems.tp2~ ~3540~ ~Install SCS's 1.5x Inquisitor dispel component first.~
+INCLUDE ~combined-kit-revisions/lib/inquisitor-scs.tpa~
+'''
     (module/'combined-kit-revisions.tp2').write_text(main,encoding='utf-8')
     for directory in ['lib','docs']:
         shutil.copytree(ROOT/'combined-kit-revisions'/directory,module/directory,dirs_exist_ok=True)
@@ -355,6 +362,7 @@ INCLUDE ~combined-kit-revisions/generated/init-BW.tpa~
         menu.append({'id':new_id,'name':'['+p.split('_')[0]+'] '+label(p,components[p][n]),
                      'group':'NPC choices' if p=='AK_NPC' else 'Optional tweaks and content'})
     menu.append({'id':90001,'name':"[BW] Teach new bard spells to Haer'Dalis and Voghiln",'group':'NPC choices'})
+    menu.append({'id':90002,'name':'[CKR] SR/R compatibility for SCS 1.5x Inquisitor dispel','group':'Late compatibility'})
     if len({x['id'] for x in menu})!=len(menu):raise ValueError('Final menu ID collision')
     (module/'component-menu.json').write_text(json.dumps(menu,indent=2)+'\n',encoding='utf-8')
     (module/'build-provenance.json').write_text(json.dumps({'version':rules['version'],'upstreams':lock['upstreams'],

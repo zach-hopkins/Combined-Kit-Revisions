@@ -1,0 +1,89 @@
+// SR/R can replace SPCL231 with one ability header. SCS 35's multiplier
+// edits header levels, so that layout otherwise becomes a fixed level-1 dispel.
+// Preserve the installed SR/R spell and expand its ability across CRE levels.
+COPY_EXISTING ~SPCL231.SPL~ ~override~
+  PATCH_IF SHORT_AT 0x68 = 1 BEGIN
+    SET ckr_h = LONG_AT 0x64
+    SET ckr_f = LONG_AT 0x6a
+    SET ckr_n = SHORT_AT (ckr_h + 0x1e)
+    SET ckr_i = SHORT_AT (ckr_h + 0x20)
+    SET ckr_found = 0
+    FOR (ckr_j = 0; ckr_j < ckr_n; ++ckr_j) BEGIN
+      PATCH_IF SHORT_AT (ckr_f + 48*(ckr_i+ckr_j)) = 58 BEGIN
+        SET ckr_found = 1
+      END
+    END
+    PATCH_IF NOT ckr_found BEGIN
+      PATCH_FAIL ~CKR: the installed Inquisitor spell has no dispel effect; refusing to change an alternate spell.~
+    END
+    READ_ASCII ckr_h ckr_header (40)
+    READ_ASCII (ckr_f + 48*ckr_i) ckr_effects (48*ckr_n)
+    SET ckr_old_effect_bytes = SOURCE_SIZE - ckr_f
+    PATCH_IF ckr_old_effect_bytes MODULO 48 BEGIN
+      PATCH_FAIL ~CKR: unsupported trailing data in the Inquisitor spell.~
+    END
+    READ_ASCII ckr_f ckr_old_effects (ckr_old_effect_bytes)
+    SET ckr_old_count = ckr_old_effect_bytes / 48
+    SET ckr_new_h = SOURCE_SIZE
+    SET ckr_new_f = ckr_new_h + 255*40
+    INSERT_BYTES SOURCE_SIZE (255*40 + ckr_old_effect_bytes + 254*48*ckr_n)
+    WRITE_ASCIIE ckr_new_f ~%ckr_old_effects%~ (ckr_old_effect_bytes)
+    FOR (ckr_level = 1; ckr_level <= 255; ++ckr_level) BEGIN
+      SET ckr_header_at = ckr_new_h + 40*(ckr_level - 1)
+      WRITE_ASCIIE ckr_header_at ~%ckr_header%~ (40)
+      WRITE_SHORT (ckr_header_at + 0x10) ckr_level
+      SET ckr_index = ckr_i
+      PATCH_IF ckr_level > 1 BEGIN
+        SET ckr_index = ckr_old_count + (ckr_level - 2)*ckr_n
+        WRITE_ASCIIE (ckr_new_f + 48*ckr_index) ~%ckr_effects%~ (48*ckr_n)
+      END
+      WRITE_SHORT (ckr_header_at + 0x20) ckr_index
+      FOR (ckr_j = 0; ckr_j < ckr_n; ++ckr_j) BEGIN
+        SET ckr_effect_at = ckr_new_f + 48*(ckr_index+ckr_j)
+        PATCH_IF SHORT_AT ckr_effect_at = 58 BEGIN
+          WRITE_LONG (ckr_effect_at+4) ((3*ckr_level)/2)
+          WRITE_LONG (ckr_effect_at+8) 2
+        END
+      END
+    END
+    WRITE_LONG 0x64 ckr_new_h
+    WRITE_SHORT 0x68 255
+    WRITE_LONG 0x6a ckr_new_f
+  END
+  SET ckr_checked = 0
+  FOR (ckr_k = 0; ckr_k < SHORT_AT 0x68; ++ckr_k) BEGIN
+    SET ckr_h = LONG_AT 0x64 + 40*ckr_k
+    SET ckr_level = SHORT_AT (ckr_h + 0x10)
+    FOR (ckr_j = 0; ckr_j < SHORT_AT (ckr_h + 0x1e); ++ckr_j) BEGIN
+      SET ckr_e = LONG_AT 0x6a + 48*(SHORT_AT (ckr_h + 0x20)+ckr_j)
+      PATCH_IF SHORT_AT ckr_e = 58 BEGIN
+        PATCH_IF LONG_AT (ckr_e+4) != ((3*ckr_level)/2) OR LONG_AT (ckr_e+8) != 2 BEGIN
+          PATCH_FAIL ~CKR: the Inquisitor dispel does not match SCS's 1.5x scaling.~
+        END
+        SET ckr_checked += 1
+      END
+    END
+  END
+  PATCH_IF NOT ckr_checked BEGIN
+    PATCH_FAIL ~CKR: no Inquisitor dispel effect found.~
+  END
+BUT_ONLY
+
+ACTION_IF FILE_EXISTS_IN_GAME ~KITLIST.2DA~ BEGIN
+  COPY_EXISTING ~KITLIST.2DA~ ~override~
+    COUNT_2DA_ROWS 9 ckr_kit_rows
+    FOR (ckr_row = 2; ckr_row < ckr_kit_rows; ++ckr_row) BEGIN
+      READ_2DA_ENTRY ckr_row 1 9 ckr_kit_name
+      PATCH_IF ~%ckr_kit_name%~ STRING_EQUAL_CASE ~INQUISITOR~ BEGIN
+        READ_2DA_ENTRY ckr_row 4 9 ckr_desc_ref
+        INNER_ACTION BEGIN
+          ACTION_GET_STRREF ckr_desc_ref ckr_desc_text
+          OUTER_PATCH_SAVE ckr_desc_text ~%ckr_desc_text%~ BEGIN
+            REPLACE_TEXTUALLY EXACT_MATCH ~acts at twice the Inquisitor's character level.~ ~acts at 1.5 times the Inquisitor's character level (rounded down).~
+          END
+          STRING_SET_EVALUATE ckr_desc_ref ~%ckr_desc_text%~
+        END
+      END
+    END
+  BUT_ONLY
+END

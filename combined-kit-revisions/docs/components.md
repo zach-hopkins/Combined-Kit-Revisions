@@ -8,6 +8,12 @@ Component 0 is the curated class/kit base. Optional tweaks and NPC choices requi
 |---|---|
 | 10 | Keep the original Inquisitor; select before 0, then install SCS's 1.5-times-level dispel adjustment if desired |
 
+## Late compatibility
+
+| ID | Choice |
+|---|---|
+| 90002 | After SR/R and SCS 3540, repair the original Inquisitor's dispel scaling to 1.5 times level; requires configuration 10 |
+
 ## Classes and kits
 
 | ID | Choice |

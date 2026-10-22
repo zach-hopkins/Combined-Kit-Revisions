@@ -15,8 +15,12 @@ Version: 0.1.0-alpha.1. All testing used independent copies; the personal game i
 | Kapellmeister recurring spell restoration | Removed from installed song resources |
 | Shared armor/item changes with EK fix | Native BW armor and mage-item components passed with EEex |
 | EK clone callback fixture regression | 15 guard cases passed using the actual callback |
+| Image spell callback deduplication after optional armor/item changes | Exactly one callback per image spell |
+| Same-run Nalia + equipment-access prerequisite selection | Passed after declaration order correction |
+| Complete CKR uninstall with EEex retained | Passed; private HLA tables and EK callback removed, EEex retained |
+| GitHub Windows build and regression suite | [Passed](https://github.com/zach-hopkins/Combined-Kit-Revisions/actions/runs/39859106731) |
 
-Additional native installation checks covered RR racial adjustments, equipment and upgrades, nonstacking familiar-strength thievery potions; BW new spells, armored casting, mage/priest item access, shields and helmets; and Mazzy, Jan, Rasaad and companion bard spellbook options. Nalia's missing equipment-access prerequisite was correctly rejected; its prerequisite is declared before the NPC choice in the corrected menu.
+Additional native installation checks covered RR racial adjustments, equipment and upgrades, nonstacking familiar-strength thievery potions; BW new spells, armored casting, mage/priest item access, shields and helmets; and Mazzy, Jan, Rasaad, Nalia and companion bard spellbook options. Nalia's missing equipment-access prerequisite was correctly rejected, then the corrected prerequisite-before-NPC order installed both in one invocation even when the requested ID list put Nalia first.
 
 RR equipment emitted an upstream `no effects altered on MISC2P.ITM` warning on the Steam game; it installed successfully. Existing upstream ability-alias warnings were also observed. These are recorded rather than represented as a warning-free build.
 

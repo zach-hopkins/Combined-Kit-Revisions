@@ -1,0 +1,24 @@
+[
+  {
+    "assertions": "passed",
+    "private_hla_tables": 92,
+    "rr_bard_level7_at": 21,
+    "rr_bard_level8_at": 29,
+    "heckle": "bounded/saveable",
+    "skald_and_inspirations": "capped",
+    "recurring_spell_restoration": "removed",
+    "eldritch_clone_fix": "not applicable without EEex",
+    "profile": "bg2ee"
+  },
+  {
+    "assertions": "passed",
+    "private_hla_tables": 99,
+    "rr_bard_level7_at": 21,
+    "rr_bard_level8_at": 29,
+    "heckle": "bounded/saveable",
+    "skald_and_inspirations": "capped",
+    "recurring_spell_restoration": "removed",
+    "eldritch_clone_fix": "one callback per image spell",
+    "profile": "bg2ee-eeex"
+  }
+]

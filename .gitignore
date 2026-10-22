@@ -1,0 +1,6 @@
+/.cache/
+/build/
+/validation/
+__pycache__/
+*.DEBUG
+*.pyc

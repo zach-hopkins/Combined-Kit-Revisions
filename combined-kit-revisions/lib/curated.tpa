@@ -1,0 +1,104 @@
+// Applied once, after the chosen upstream class/kit implementations.
+INCLUDE ~combined-kit-revisions/generated/init-AK.tpa~
+
+// Bounty Hunters gain the shared AK inspection tool without importing AK traps,
+// poison or its high-damage Manhunter snare.
+INCLUDE ~ArtisansKitpack/effects/analyze.tpa~
+COPY_EXISTING ~CLABTH03.2DA~ ~override~
+  LPF set_clab_2da_entries INT_VAR f_MinLevel = 1 f_MaxLevel = 1
+    STR_VAR f_Entry = GA_C0A_A01 END
+BUT_ONLY
+
+// A bounded BW Heckle on RR's Jester: one use at level 1 and every six levels,
+// 25% spell failure and +1 critical miss for one round, save vs spells negates.
+// No guaranteed berserk, no unlimited/day uses, no original BW song/HLA table.
+COPY ~BardicWonders/Jester/spells/c0jes01.SPL~ ~override/CKRHECK.SPL~
+  LPF ALTER_EFFECT INT_VAR match_opcode = 60 parameter1 = 25 savingthrow = 1 savebonus = 0 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 362 parameter1 = 1 savingthrow = 1 savebonus = 0 END
+  LPF DELETE_EFFECT INT_VAR match_opcode = 3 END
+  LPF DELETE_EFFECT INT_VAR match_opcode = 142 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 321 STR_VAR resource = CKRHECK END
+  SAY NAME1 ~Heckle~
+  SAY UNIDENTIFIED_DESC ~Distracts one target for one round. The target suffers 25% spell failure and a +1 critical miss modifier unless it saves vs. spells. Does not cause berserk. Gained once per day at level 1 and every six levels thereafter.~
+COPY_EXISTING ~CLABBA03.2DA~ ~override~
+  LPF set_clab_2da_entries INT_VAR f_MinLevel = 1 f_MaxLevel = 40 f_Increment = 6
+    STR_VAR f_Entry = GA_CKRHECK END
+BUT_ONLY
+
+// Keep RR's Skald identity with a bounded +3 ordinary / +4 enhanced song.
+// Apply only to RR's own song payloads and positive bonuses, never other spells.
+COPY_EXISTING ~RR#BSK00.SPL~ ~override~
+  LPF ALTER_EFFECT INT_VAR match_opcode = 278 match_parameter1 = 4 parameter1 = 3 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 73 match_parameter1 = 4 parameter1 = 3 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 0 match_parameter1 = 4 parameter1 = 3 END
+BUT_ONLY
+COPY_EXISTING ~RR#BSK02.SPL~ ~override~
+  LPF ALTER_EFFECT INT_VAR match_opcode = 278 match_parameter1 = 5 parameter1 = 4 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 73 match_parameter1 = 5 parameter1 = 4 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 0 match_parameter1 = 5 parameter1 = 4 END
+BUT_ONLY
+
+// BW true-bard Inspirations: cap passive accuracy, AC and save bonuses at 2,
+// and passive casting speed at 1. Utility and slow regeneration stay intact.
+COPY_EXISTING ~C0BDI01B.SPL~ ~override~
+  LPF ALTER_EFFECT INT_VAR match_opcode = 54 match_parameter1 = 3 parameter1 = 2 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 54 match_parameter1 = 4 parameter1 = 2 END
+BUT_ONLY
+COPY_EXISTING ~C0BDI03B.SPL~ ~override~
+  LPF ALTER_EFFECT INT_VAR match_opcode = 0 match_parameter1 = 3 parameter1 = 2 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 0 match_parameter1 = 4 parameter1 = 2 END
+BUT_ONLY
+COPY_EXISTING ~C0BDI05B.SPL~ ~override~
+  LPF ALTER_EFFECT INT_VAR match_opcode = 325 match_parameter1 = 3 parameter1 = 2 END
+  LPF ALTER_EFFECT INT_VAR match_opcode = 325 match_parameter1 = 4 parameter1 = 2 END
+BUT_ONLY
+COPY_EXISTING ~C0BDI06B.SPL~ ~override~
+  LPF ALTER_EFFECT INT_VAR match_opcode = 189 match_parameter1 = 2 parameter1 = 1 END
+BUT_ONLY
+
+// RR songs remove and suppress equivalent combat Inspirations. The aura remains
+// selected and can resume after singing; this does not give free double bonuses.
+ACTION_FOR_EACH CKR_song IN ~RR#BDF02~ ~RR#BDF04~ BEGIN
+  COPY_EXISTING ~%CKR_song%.SPL~ ~override~
+    LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 timing = 1
+      STR_VAR resource = C0BDI01B END
+    LPF ADD_SPELL_EFFECT INT_VAR opcode = 321 target = 2 timing = 1
+      STR_VAR resource = C0BDI05B END
+    LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 timing = 0 duration = 6 parameter2 = 0
+      STR_VAR resource = C0BDI01B END
+    LPF ADD_SPELL_EFFECT INT_VAR opcode = 318 target = 2 timing = 0 duration = 6 parameter2 = 0
+      STR_VAR resource = C0BDI05B END
+  BUT_ONLY
+END
+
+// Passive repeated high-level spell refills undermine the campaign's resource
+// economy. Keep Kapellmeister caster support, but remove recurring restoration.
+ACTION_IF FILE_EXISTS_IN_GAME ~C0KM#SO3.SPL~ BEGIN
+  COPY_EXISTING_REGEXP GLOB ~^C0KM#.+\.SPL$~ ~override~
+    LPF DELETE_EFFECT INT_VAR match_opcode = 261 END
+  BUT_ONLY
+END
+
+// Add visible integration notes to the final descriptions without deleting any
+// kit's original restrictions or RR's spell progression.
+DEFINE_ACTION_FUNCTION CKR_NOTE_KIT
+  STR_VAR kit = ~~ note = ~~
+BEGIN
+  LAF GET_KIT_STRREF STR_VAR kit_name = EVAL ~%kit%~ RET kit_strref END
+  ACTION_IF kit_strref >= 0 BEGIN
+    ACTION_GET_STRREF kit_strref CKR_desc
+    STRING_SET_EVALUATE kit_strref ~%CKR_desc%
+
+Combined Kit Revisions: %note%~
+  END
+END
+LAF CKR_NOTE_KIT STR_VAR kit = JESTER note = ~Also gains the bounded Heckle ability described in the ability tooltip.~ END
+LAF CKR_NOTE_KIT STR_VAR kit = BOUNTY_HUNTER note = ~Also gains AK Analyze at will to inspect target statistics.~ END
+LAF CKR_NOTE_KIT STR_VAR kit = SKALD note = ~Ordinary song attack/damage/AC bonuses cap at +3; enhanced song bonuses cap at +4.~ END
+LAF CKR_NOTE_KIT STR_VAR kit = C0_KAPELLMEISTER note = ~Recurring spell-restoration effects from the song are disabled; other caster support remains.~ END
+
+COPY_EXISTING ~C0BDI00.SPL~ ~override~
+  SAY UNIDENTIFIED_DESC ~Choose one persistent Inspiration. Courage grants +1 attack (+2 from level 8); Defense grants +2 AC; Toughness grants +2 saves; Alacrity grants +1 casting speed. Competence and Regeneration retain BW progression. RR ordinary/enhanced bard songs suppress Courage and Toughness benefits while their corresponding song bonuses apply. Inspirations are available to the trueclass bard, not every bard kit.~
+BUT_ONLY
+
+INCLUDE ~combined-kit-revisions/lib/finalize.tpa~

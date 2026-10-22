@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0-alpha.1",
+  "base_component": 0,
+  "target": ["bg2ee", "eet"],
+  "language": "English",
+  "base_order": [
+    ["AK", 1100], ["AK", 1003], ["AK", 1006], ["AK", 1004], ["AK", 1005], ["AK", 1007],
+    ["AK", 2000], ["AK", 2010], ["AK", 2011], ["AK", 2012],
+    ["AK", 3000], ["AK", 3010], ["AK", 3003], ["AK", 3011], ["AK", 3004],
+    ["AK", 5300], ["AK", 5100], ["AK", 5200], ["AK", 10001],
+    ["RR", 0], ["RR", 1], ["RR", 2], ["RR", 4], ["RR", 5], ["RR", 6],
+    ["AK", 7008], ["AK", 20000], ["AK", 20001], ["AK", 8001], ["AK", 8101], ["AK", 8003],
+    ["AK", 8004], ["AK", 10002], ["AK", 10003], ["AK", 10004],
+    ["AK", 1000], ["AK", 1001], ["AK", 1008], ["AK", 1009], ["AK", 1010],
+    ["AK", 2002], ["AK", 2003], ["AK", 3001], ["AK", 3002], ["AK", 3005],
+    ["AK", 5001], ["AK", 5002], ["AK", 7001], ["AK", 7002], ["AK", 7003], ["AK", 7005],
+    ["AK", 9001], ["AK", 30001],
+    ["BW", 1004], ["BW", 1005], ["BW", 1006], ["BW", 1007], ["BW", 1008],
+    ["BW", 1009], ["BW", 1010], ["BW", 1011], ["BW", 1012], ["BW", 2002]
+  ],
+  "excluded": {
+    "AK": [1002, 7000, 7004, 7007, 7006, 8002, 8102],
+    "BW": [1001, 1002, 1003, 2007]
+  },
+  "id_offsets": {"RR": 1000, "BW": 20000, "AK": 1000000, "AK_TWEAK": 10000000, "AK_NPC": 20000000},
+  "policies": {
+    "bard_spell_progression": "RR component 6 included in base: seventh-level slots at 21, eighth-level at 29",
+    "original_rogue_kits": "RR, never full competing AK/BW replacements",
+    "npc_edits": "Separate, individually selectable; none in base",
+    "non_kit_tweaks": "Separate origin-labeled choices",
+    "eeex": "Skip EEex-only base kits with explicit log messages when EEex is absent",
+    "dragon_disciple": "Reduced stat bonus variant",
+    "pale_master": "Unholy necromancy spell-access variant"
+  }
+}

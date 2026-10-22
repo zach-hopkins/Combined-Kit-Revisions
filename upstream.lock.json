@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "upstreams": [
+    {"id": "RR", "repository": "Spellhold-Studios/Rogue-Rebalancing", "commit": "18680008d468ec5014b4377beabb706376ad0fe0", "folders": ["rr"]},
+    {"id": "AK", "repository": "zach-hopkins/The-Artisan-s-Kitpack", "commit": "83c95ded0c3adc12d34b8896a7dc8aaa25e082c1", "folders": ["ArtisansKitpack", "ArtisansKitpack_npc", "ArtisansKitpack_tweak"]},
+    {"id": "BW", "repository": "TheArtisanBG/Bardic-Wonders", "commit": "4e72d9739d6728d688484618281ed6c3a7428b4c", "folders": ["BardicWonders"]}
+  ]
+}

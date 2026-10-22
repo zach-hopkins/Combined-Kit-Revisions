@@ -1,0 +1,69 @@
+// Freeze final per-kit HLA ownership. Every LUABBR row receives its own private
+// table; no CKR table shares RR/BW's ambiguous BA2/BA3 filenames.
+// Revalidate and retain the EK clone callback after optional armor/item patches.
+INCLUDE ~ArtisansKitpack/lib/eldritch_clone_fix.tpa~
+ACTION_CLEAR_ARRAY CKR_kit_classes
+COPY_EXISTING ~KITLIST.2DA~ ~override~
+  COUNT_2DA_ROWS 9 CKR_kit_rows
+  FOR (CKR_k = 2; CKR_k < CKR_kit_rows; ++CKR_k) BEGIN
+    READ_2DA_ENTRY CKR_k 1 9 CKR_kit_name
+    READ_2DA_ENTRY CKR_k 8 9 CKR_kit_class
+    TO_UPPER CKR_kit_name
+    SET $CKR_kit_classes(~%CKR_kit_name%~) = CKR_kit_class
+  END
+BUT_ONLY
+OUTER_SET $CKR_kit_classes(~BARD~) = 5
+OUTER_SET $CKR_kit_classes(~THIEF~) = 4
+
+COPY_EXISTING ~LUABBR.2DA~ ~override~
+  COUNT_2DA_ROWS 2 CKR_rows
+  FOR (CKR_row = 0; CKR_row < CKR_rows; ++CKR_row) BEGIN
+    READ_2DA_ENTRY CKR_row 1 2 CKR_old
+    SPRINT CKR_new ~%CKR_old%~
+    READ_2DA_ENTRY CKR_row 0 2 CKR_label
+    TO_UPPER CKR_label
+    SET CKR_class = 0
+    PATCH_IF VARIABLE_IS_SET $CKR_kit_classes(~%CKR_label%~) BEGIN
+      SET CKR_class = $CKR_kit_classes(~%CKR_label%~)
+    END
+    PATCH_IF (~%CKR_old%~ STRING_MATCHES_REGEXP ~^CK[0-9]+$~) != 0 BEGIN
+      PATCH_IF FILE_EXISTS_IN_GAME ~LU%CKR_old%.2DA~ BEGIN
+        SPRINT CKR_new ~CK%CKR_row%~
+        INNER_ACTION BEGIN
+          COPY_EXISTING ~LU%CKR_old%.2DA~ ~override/LU%CKR_new%.2DA~
+        END
+        SET_2DA_ENTRY CKR_row 1 2 ~%CKR_new%~
+      END
+    END ELSE BEGIN
+      SPRINT CKR_new ~%CKR_old%~
+    END
+    PATCH_IF FILE_EXISTS_IN_GAME ~LU%CKR_new%.2DA~ BEGIN
+      INNER_ACTION BEGIN
+        COPY_EXISTING ~LU%CKR_new%.2DA~ ~override~
+          PATCH_IF CKR_class = 5 BEGIN
+            REPLACE_TEXTUALLY ~SPCL913~ ~RR#BHL05~
+            REPLACE_TEXTUALLY ~SPCL914~ ~RR#BHL06~
+            REPLACE_TEXTUALLY ~SPCL918~ ~RR#ALCHB~
+            REPLACE_TEXTUALLY ~SPCL919~ ~RR#SCRL~
+            REPLACE_TEXTUALLY ~SPCL921~ ~RR#BHL07~
+            PATCH_IF (~%CKR_label%~ STRING_MATCHES_REGEXP ~^C0.*$~) = 0 BEGIN
+              // Custom BW songs must not acquire RR's generic replacement song
+              // or its song-specific Lingering prerequisite by inheritance.
+              REPLACE_TEXTUALLY ~^.+AP_RR#BDF0[35].*$~ ~~
+            END
+            PATCH_IF ~%CKR_label%~ STRING_EQUAL_CASE ~C0ABETT~ BEGIN
+              REPLACE_TEXTUALLY ~^.+RR#BHL07.*$~ ~~
+            END
+          END
+          PATCH_IF CKR_class = 4 BEGIN
+            REPLACE_TEXTUALLY ~SPCL912~ ~RR#THL04~
+            REPLACE_TEXTUALLY ~SPCL913~ ~RR#THL02~
+            REPLACE_TEXTUALLY ~SPCL914~ ~RR#THL03~
+            REPLACE_TEXTUALLY ~SPCL918~ ~RR#ALCHT~
+          END
+        BUT_ONLY
+      END
+    END
+  END
+  PRETTY_PRINT_2DA
+BUT_ONLY

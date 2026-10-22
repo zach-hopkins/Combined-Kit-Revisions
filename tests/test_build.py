@@ -91,4 +91,14 @@ class InstallerIntegrationTests(unittest.TestCase):
         text=path.read_text(encoding='utf-8')
         self.assertLess(text.index('DESIGNATED 10008204'),text.index('DESIGNATED 20200010'))
 
+    def test_original_inquisitor_is_an_early_configuration(self):
+        path=ROOT/'build/package/combined-kit-revisions/combined-kit-revisions.tp2'
+        if not path.exists():self.skipTest('Build package first')
+        text=path.read_text(encoding='utf-8')
+        self.assertLess(text.index('DESIGNATED 10\n'),text.index('DESIGNATED 0\n'))
+        condition='NOT MOD_IS_INSTALLED ~combined-kit-revisions/combined-kit-revisions.tp2~ ~10~'
+        self.assertIn('OUTER_SET CKR_AK_3003 = CKR_BASE_PRESENT AND '+condition,text)
+        block=text[text.index('PRINT ~[CKR base / AK] Artisan\'s Kitpack: Inquisitor Overhaul~'):]
+        self.assertIn('ACTION_IF 1 AND '+condition+' BEGIN',block.split('END ELSE BEGIN')[0])
+
 if __name__=='__main__':unittest.main()

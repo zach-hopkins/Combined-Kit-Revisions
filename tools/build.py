@@ -285,9 +285,16 @@ ALWAYS
 '''
     for p,n in base:
         guard=' AND CKR_EEEX' if any('EEEX' in x.upper() for x in components[p][n]['flags']) else ''
+        if (p,n)==('AK',3003):
+            guard+=f' AND NOT MOD_IS_INSTALLED ~{TP2}~ ~10~'
         header+=f'  OUTER_SET CKR_{p}_{n} = CKR_BASE_PRESENT{guard}\n'
     header+='END\nLANGUAGE ~English~ ~english~ ~rr/tra/english/game.tra~ ~rr/tra/english/setup.tra~ ~rr/tra/ee/english/game.tra~\n\n'
-    main=header+'''BEGIN ~Combined Kit Revisions: Opinionated class and kit base (RR bard spell progression included)~ DESIGNATED 0
+    main=header+f'''BEGIN ~[CKR] Keep the original Inquisitor (install before the base; supports SCS dispel adjustment)~ DESIGNATED 10
+GROUP ~Base configuration~
+FORBID_COMPONENT ~{TP2}~ ~0~ ~Select this configuration before installing the CKR base.~
+PRINT ~CKR will retain the original Inquisitor abilities. SCS may adjust its Dispel Magic afterwards.~
+
+BEGIN ~Combined Kit Revisions: Opinionated class and kit base (RR bard spell progression included)~ DESIGNATED 0
 GROUP ~Classes and kits~
 REQUIRE_PREDICATE GAME_IS ~bg2ee eet~ ~Combined Kit Revisions currently supports BG2EE and EET.~
 '''
@@ -299,6 +306,8 @@ REQUIRE_PREDICATE GAME_IS ~bg2ee eet~ ~Combined Kit Revisions currently supports
     for p,n in base:
         conditions=next(x['conditions'] for x in catalog if x['origin']==p and x['upstream_component']==n)
         condition=' AND '.join(f'({x[0]})' for x in conditions) or '1'
+        if (p,n)==('AK',3003):
+            condition+=f' AND NOT MOD_IS_INSTALLED ~{TP2}~ ~10~'
         main+=f'''\nPRINT ~[CKR base / {p}] {label(p,components[p][n]).replace('~','-')}~
 ACTION_IF {condition} BEGIN
   INCLUDE ~combined-kit-revisions/generated/{p}-{n}.tpa~
@@ -335,10 +344,13 @@ INCLUDE ~combined-kit-revisions/generated/init-BW.tpa~
     for directory in ['lib','docs']:
         shutil.copytree(ROOT/'combined-kit-revisions'/directory,module/directory,dirs_exist_ok=True)
     (module/'README.md').write_text((ROOT/'README.md').read_text(encoding='utf-8').replace('combined-kit-revisions/docs/','docs/'),encoding='utf-8')
+    for name in ['LICENSE','NOTICE.md']:
+        shutil.copy2(ROOT/name,module/name)
     shutil.copy2(ROOT/'upstream.lock.json',module/'upstream.lock.json')
     shutil.copy2(ROOT/'rules.json',module/'rules.json')
     (module/'component-catalog.json').write_text(json.dumps(catalog,indent=2)+'\n')
-    menu=[{'id':0,'name':'Opinionated class and kit base (RR bard spell progression included)','group':'Classes and kits'}]
+    menu=[{'id':10,'name':'[CKR] Keep the original Inquisitor (select before base)','group':'Base configuration'},
+          {'id':0,'name':'Opinionated class and kit base (RR bard spell progression included)','group':'Classes and kits'}]
     for (p,n),new_id in optional.items():
         menu.append({'id':new_id,'name':'['+p.split('_')[0]+'] '+label(p,components[p][n]),
                      'group':'NPC choices' if p=='AK_NPC' else 'Optional tweaks and content'})

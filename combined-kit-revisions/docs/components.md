@@ -1,6 +1,12 @@
 # Installer components
 
-Component 0 is the curated class/kit base. All other choices are optional and require it. IDs below are CKR IDs, not upstream IDs.
+Component 0 is the curated class/kit base. Optional tweaks and NPC choices require it. Component 10 is an optional configuration selected before the base. IDs below are CKR IDs, not upstream IDs.
+
+## Base configuration
+
+| ID | Choice |
+|---|---|
+| 10 | Keep the original Inquisitor; select before 0, then install SCS's 1.5-times-level dispel adjustment if desired |
 
 ## Classes and kits
 

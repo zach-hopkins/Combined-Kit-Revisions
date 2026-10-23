@@ -4,6 +4,8 @@ An opinionated integration of **Rogue Rebalancing (RR)**, **Bardic Wonders (BW)*
 
 Version 0.1.0 is an **alpha integration**, intended for a fresh mod build and validation before campaign use. Do not install it over the standalone class mods or an ongoing personal campaign.
 
+Alpha 3 fixes a legacy RR detectable-spell routine that rebuilt `STATS.IDS` with changed numeric IDs. In the combined build this exhausted the available extended-stat slots, causing AK equipment checks to share native stat 200 and incorrectly block weapons such as longbows on Archers. The builder now preserves the original identifiers and aliases. Existing alpha 1/2 builds require reinstalling the base and dependent components, plus refreshing or migrating already saved equipment effects; copying the new installer alone does not repair compiled resources.
+
 ## Installer layout
 
 * **Component 10 — Keep the original Inquisitor.** Select this before component 0 to retain the original area Dispel Magic and True Sight instead of Artisan's Smite Magic, aura and other Inquisitor changes. Install SCS's dispel adjustment afterwards to obtain its 1.5-times-level variant. Without component 10, the base retains Artisan's overhaul. This choice does not change other paladin kits.

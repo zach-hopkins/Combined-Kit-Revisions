@@ -38,6 +38,21 @@ def read_text(path):
     try: return data.decode('utf-8-sig')
     except UnicodeDecodeError: return data.decode('cp1252')
 
+def preserve_rr_stats_ids(text):
+    """IDS entries need no sorting; RR's old rebuild aliases its input/output arrays."""
+    pattern=r'DEFINE_ACTION_MACRO reorder_stats_ids BEGIN.*?\nEND\s*\n\s*END(?=\s*\n)'
+    matches=list(re.finditer(pattern,text,re.S))
+    if len(matches)!=1 or 'ACTION_PHP_EACH stats AS ind => res' not in matches[0][0]:
+        raise ValueError('RR STATS.IDS rebuild changed upstream')
+    replacement='''DEFINE_ACTION_MACRO reorder_stats_ids BEGIN
+// Preserve numeric IDs and aliases. The original macro reuses the READ_2DA
+// array as output, emitting row numbers as stat IDs and consuming all free slots.
+// IDS lookup does not require sorted input; detectable_spells_setup already
+// appends its additional aliases before calling this macro.
+PRINT ~CKR: preserving STATS.IDS numeric values and aliases.~
+END'''
+    return text[:matches[0].start()]+replacement+text[matches[0].end():]
+
 def mask_comments(text):
     """Blank comments, preserving strings, offsets and newlines for declaration slicing."""
     chars = list(text)
@@ -192,6 +207,8 @@ def build(args):
                     file.write_text(transform(read_text(file),effective_folder),encoding='utf-8',newline='\n')
     # Upstream embeds a Garrick prompt inside the Troubadour kit. The dedicated
     # AK NPC component already provides this choice; never prompt/change him in base.
+    ds=out/'rr/lib/ds/ds.tph'
+    ds.write_text(preserve_rr_stats_ids(read_text(ds)),encoding='utf-8')
     troubadour=out/'BardicWonders/lib/troubadour.tpa'
     text=read_text(troubadour)
     anchor='ACTION_IF FILE_EXISTS_IN_GAME ~garric.cre~'

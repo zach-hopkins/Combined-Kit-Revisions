@@ -347,6 +347,13 @@ REQUIRE_COMPONENT ~{TP2}~ ~10~ ~Select the original Inquisitor configuration fir
 REQUIRE_COMPONENT ~stratagems/setup-stratagems.tp2~ ~3540~ ~Install SCS's 1.5x Inquisitor dispel component first.~
 INCLUDE ~combined-kit-revisions/lib/inquisitor-scs.tpa~
 '''
+    main+=f'''\nBEGIN ~[CKR] Complete Red Wizard assignment for SoD Edwin (EET)~ DESIGNATED 90003
+GROUP ~NPC choices~
+REQUIRE_COMPONENT ~{TP2}~ ~20005102~ ~Install the Red Wizard NPC component first.~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~This compatibility component is for EET.~
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~EDWIN7_.CRE~ ~SoD Edwin is not present.~
+INCLUDE ~combined-kit-revisions/lib/edwin-sod.tpa~
+'''
     (module/'combined-kit-revisions.tp2').write_text(main,encoding='utf-8')
     for directory in ['lib','docs']:
         shutil.copytree(ROOT/'combined-kit-revisions'/directory,module/directory,dirs_exist_ok=True)
@@ -363,6 +370,7 @@ INCLUDE ~combined-kit-revisions/lib/inquisitor-scs.tpa~
                      'group':'NPC choices' if p=='AK_NPC' else 'Optional tweaks and content'})
     menu.append({'id':90001,'name':"[BW] Teach new bard spells to Haer'Dalis and Voghiln",'group':'NPC choices'})
     menu.append({'id':90002,'name':'[CKR] SR/R compatibility for SCS 1.5x Inquisitor dispel','group':'Late compatibility'})
+    menu.append({'id':90003,'name':'[CKR] Complete Red Wizard assignment for SoD Edwin (EET)','group':'NPC choices'})
     if len({x['id'] for x in menu})!=len(menu):raise ValueError('Final menu ID collision')
     (module/'component-menu.json').write_text(json.dumps(menu,indent=2)+'\n',encoding='utf-8')
     (module/'build-provenance.json').write_text(json.dumps({'version':rules['version'],'upstreams':lock['upstreams'],

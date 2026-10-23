@@ -20,14 +20,14 @@ def main():
             (game/'override/stats.ids').write_text('\n'.join(entries)+'\n')
             shutil.copy2(ROOT/'.cache/AK/ArtisansKitpack/lib/functions.tph',game/'functions.tph')
             (game/'test.tp2').write_text('BACKUP ~backup~\nAUTHOR ~test~\nBEGIN ~Registry test~\nINCLUDE ~functions.tph~\n'+macro+'\nLAM reorder_stats_ids\n'+''.join(
-                f'LAF ADD_IDS_ENTRY INT_VAR minValue = 1 preferredValue = 200 STR_VAR idsFile = ~stats.ids~ identifier = ~CUSTOM_{i}~ RET value END\n' for i in range(26)))
+                f'LAF ADD_IDS_ENTRY INT_VAR minValue = 1 preferredValue = 200 STR_VAR idsFile = ~stats.ids~ identifier = ~CUSTOM_{i}~ RET value END\n' for i in range(26))+'LAM reorder_stats_ids\n')
             r=subprocess.run([str(a.weidu.resolve()),'test.tp2','--noautoupdate','--no-exit-pause','--skip-at-view','--force-install-list','0'],cwd=game,input=b'',capture_output=True)
             assert not r.returncode and b'SUCCESSFULLY INSTALLED' in r.stdout,(r.stdout+r.stderr).decode(errors='replace')[-4000:]
             (ROOT/f'build/stats-{label}-test.log').write_bytes(r.stdout+r.stderr)
             result={line.split()[1]:int(line.split()[0]) for line in (game/'override/stats.ids').read_text().splitlines() if len(line.split())==2}
             intact=all(result.get(key)==value for key,value in expected.items())
             ids=[result.get(f'CUSTOM_{i}',-1) for i in range(26)]
-            valid=len(set(ids))==26 and min(ids)>202
+            valid=len(set(ids))==26 and min(ids)>202 and max(ids)<=255
             print(label,'native intact',intact,'custom ids',ids)
             if label=='original':assert not intact and not valid;print('Reproduced: original RR macro renumbers native stats and collides custom equipment flags')
             else:assert intact and valid;print('PASS: all native IDs/aliases preserved; 26 independent custom stats allocated above 202')

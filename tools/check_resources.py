@@ -11,6 +11,8 @@ def effects(path):
     for start in range(offset,len(data)-47,48):
         yield {'opcode':struct.unpack_from('<H',data,start)[0],
                'p1':struct.unpack_from('<i',data,start+4)[0],
+               'p2':struct.unpack_from('<I',data,start+8)[0],
+               'special':struct.unpack_from('<I',data,start+44)[0],
                'save':struct.unpack_from('<I',data,start+36)[0],
                'bonus':struct.unpack_from('<i',data,start+40)[0],
                'resource':data[start+20:start+28].rstrip(b'\0').decode('ascii',errors='replace').upper()}
@@ -20,6 +22,19 @@ def check(game):
     files={p.name.upper():p for p in override.iterdir() if p.is_file()}
     def file(name):return files[name.upper()]
     def rows(name):return [x.split() for x in file(name).read_text(errors='replace').splitlines()[3:] if x.strip()]
+    stats={}
+    for line in file('STATS.IDS').read_text(errors='replace').splitlines():
+        fields=line.split()
+        if len(fields)>=2:
+            try:stats[fields[1].upper()]=int(fields[0],0)
+            except ValueError:pass
+    for name,value in {'MAXHITPOINTS':1,'THAC0':7,'PROFICIENCYLONGBOW':104,'LEVELDRAIN':200}.items():
+        assert stats.get(name)==value,('Native stat registry corrupted',name,stats.get(name))
+    equipment={k:v for k,v in stats.items() if k.startswith('C0_') or k=='IS_FAVORED_SOUL'}
+    if 'C0PR#CL.SPL' in files:
+        assert equipment and min(equipment.values())>202 and len(set(equipment.values()))==len(equipment),'Equipment stat collision'
+        assert any(e['opcode']==401 and e['special']==stats['C0_PROFICIENCYLONGBOW'] for e in effects(file('C0PR#104.SPL'))),'Wrong longbow permission stat'
+        assert any(e['opcode']==326 and e['p1']==12 and e['resource']=='C0PR#104' for e in effects(file('C0PR#CL.SPL'))),'Rangers missing longbow permission'
     bard={int(r[0]):[int(x) for x in r[1:]] for r in rows('MXSPLBRD.2DA')}
     assert bard[20][6]==0 and bard[21][6]==1,'RR level-7 spell access'
     assert bard[28][7]==0 and bard[29][7]==1,'RR level-8 spell access'
@@ -60,6 +75,7 @@ def check(game):
             assert len(callbacks)==1,('Duplicated/missing EK clone callback',name,len(callbacks))
         clone='one callback per image spell'
     return {'game':str(game),'assertions':'passed','private_hla_tables':len(hla),
+            'native_stat_ids':'preserved','distinct_equipment_stats':len(equipment),
             'rr_bard_level7_at':21,'rr_bard_level8_at':29,'heckle':'bounded/saveable',
             'skald_and_inspirations':'capped','recurring_spell_restoration':'removed','eldritch_clone_fix':clone}
 

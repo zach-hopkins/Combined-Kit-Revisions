@@ -353,6 +353,7 @@ REQUIRE_COMPONENT ~{TP2}~ ~20005102~ ~Install the Red Wizard NPC component first
 REQUIRE_PREDICATE GAME_IS ~eet~ ~This compatibility component is for EET.~
 REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~EDWIN7_.CRE~ ~SoD Edwin is not present.~
 INCLUDE ~combined-kit-revisions/lib/edwin-sod.tpa~
+INCLUDE ~combined-kit-revisions/lib/finalize.tpa~
 '''
     (module/'combined-kit-revisions.tp2').write_text(main,encoding='utf-8')
     for directory in ['lib','docs']:

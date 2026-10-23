@@ -3,6 +3,7 @@
 // Revalidate and retain the EK clone callback after optional armor/item patches.
 INCLUDE ~ArtisansKitpack/lib/eldritch_clone_fix.tpa~
 ACTION_CLEAR_ARRAY CKR_kit_classes
+ACTION_CLEAR_ARRAY CKR_seen_hlas
 COPY_EXISTING ~KITLIST.2DA~ ~override~
   COUNT_2DA_ROWS 9 CKR_kit_rows
   FOR (CKR_k = 2; CKR_k < CKR_kit_rows; ++CKR_k) BEGIN
@@ -26,7 +27,7 @@ COPY_EXISTING ~LUABBR.2DA~ ~override~
     PATCH_IF VARIABLE_IS_SET $CKR_kit_classes(~%CKR_label%~) BEGIN
       SET CKR_class = $CKR_kit_classes(~%CKR_label%~)
     END
-    PATCH_IF (~%CKR_old%~ STRING_MATCHES_REGEXP ~^CK[0-9]+$~) != 0 BEGIN
+    PATCH_IF ((~%CKR_old%~ STRING_MATCHES_REGEXP ~^CK[0-9]+$~) != 0) OR (VARIABLE_IS_SET $CKR_seen_hlas(~%CKR_old%~)) BEGIN
       PATCH_IF FILE_EXISTS_IN_GAME ~LU%CKR_old%.2DA~ BEGIN
         SPRINT CKR_new ~CK%CKR_row%~
         INNER_ACTION BEGIN
@@ -37,6 +38,7 @@ COPY_EXISTING ~LUABBR.2DA~ ~override~
     END ELSE BEGIN
       SPRINT CKR_new ~%CKR_old%~
     END
+    SET $CKR_seen_hlas(~%CKR_new%~) = 1
     PATCH_IF FILE_EXISTS_IN_GAME ~LU%CKR_new%.2DA~ BEGIN
       INNER_ACTION BEGIN
         COPY_EXISTING ~LU%CKR_new%.2DA~ ~override~
